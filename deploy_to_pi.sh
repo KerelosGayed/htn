@@ -31,12 +31,23 @@ sudo apt install -y \
     curl \
     git
 
+# Configure npm to avoid permission issues
+echo "🔧 Configuring npm permissions..."
+mkdir -p ~/.npm-global
+npm config set prefix '~/.npm-global'
+export PATH=~/.npm-global/bin:$PATH
+
+# Add to bash profile if not already there
+if ! grep -q "export PATH=~/.npm-global/bin:\$PATH" ~/.bashrc; then
+    echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.bashrc
+fi
+
 # Navigate to electron app directory
 cd hermes-desktop
 
-# Install Node.js dependencies
+# Install Node.js dependencies (including dev dependencies for building)
 echo "📱 Installing Node.js dependencies..."
-npm ci --production
+npm ci
 
 # Build the app
 echo "🔨 Building the application..."
@@ -53,8 +64,9 @@ After=graphical-session.target
 Type=simple
 User=pi
 Environment=DISPLAY=:0
+Environment=PATH=/home/pi/.npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 WorkingDirectory=$HERMES_DIR/hermes-desktop
-ExecStart=/usr/bin/npm run start
+ExecStart=/home/pi/.npm-global/bin/npm run start
 Restart=always
 RestartSec=5
 
