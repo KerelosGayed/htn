@@ -15,6 +15,7 @@ chmod +x open_steam_link.sh
 chmod +x wifi_manage.sh
 chmod +x volume_control.py
 chmod +x battery_status.py
+chmod +x troubleshoot_startup.sh
 
 # Install system dependencies
 echo "📦 Installing system dependencies..."
@@ -59,16 +60,21 @@ sudo tee /etc/systemd/system/hermes.service > /dev/null <<EOF
 [Unit]
 Description=Hermes Gaming Console
 After=graphical-session.target
+Wants=graphical-session.target
 
 [Service]
 Type=simple
 User=pi
+Group=pi
 Environment=DISPLAY=:0
+Environment=HOME=/home/pi
 Environment=PATH=/home/pi/.npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 WorkingDirectory=$HERMES_DIR/hermes-desktop
-ExecStart=/home/pi/.npm-global/bin/npm run start
+ExecStart=/home/pi/.npm-global/bin/npm run dev
 Restart=always
-RestartSec=5
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=graphical-session.target
@@ -103,13 +109,18 @@ echo "   • Systemd service: hermes.service"
 echo "   • XDG autostart: ~/.config/autostart/hermes.desktop"
 echo ""
 echo "� To start Hermes manually:"
-echo "   cd $HERMES_DIR/hermes-desktop && npm run start"
+echo "   cd $HERMES_DIR/hermes-desktop && npm run dev"
 echo ""
-echo "🎯 To start via systemd:"
-echo "   sudo systemctl start hermes.service"
+echo "🎯 To control systemd service:"
+echo "   sudo systemctl start hermes.service    # Start now"
+echo "   sudo systemctl status hermes.service   # Check status"
+echo "   sudo systemctl stop hermes.service     # Stop service"
 echo ""
-echo "📊 To check status:"
-echo "   sudo systemctl status hermes.service"
+echo "📊 To check logs:"
+echo "   sudo journalctl -u hermes.service -f"
+echo ""
+echo "🛠️  If startup fails:"
+echo "   ./troubleshoot_startup.sh              # Run diagnostics"
 echo ""
 echo "🛠️  To disable auto-startup:"
 echo "   sudo systemctl disable hermes.service"
