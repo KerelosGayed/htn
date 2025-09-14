@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useGamepadNavigation } from '../../hooks/useGamepadNavigation';
 import { useFocus, useFocusable } from '../../hooks/useFocus';
+import { useVolumeControls } from '../../hooks/useVolumeControls';
 
 const games = new Array(18).fill(0).map((_, i) => ({
   id: i + 1,
@@ -11,6 +12,7 @@ const games = new Array(18).fill(0).map((_, i) => ({
 
 export function LibraryScreen({ onBack }: { onBack: () => void }) {
   const { moveFocus, activateFocused, clearFocus } = useFocus();
+  const { handleVolumeUp, handleVolumeDown } = useVolumeControls();
 
   // Set up gamepad navigation
   useGamepadNavigation({
@@ -20,6 +22,8 @@ export function LibraryScreen({ onBack }: { onBack: () => void }) {
     onDpadRight: () => moveFocus('right'),
     onA: () => activateFocused(),
     onB: () => onBack(),
+    onLeftBumper: handleVolumeUp,
+    onLeftTrigger: handleVolumeDown,
   });
 
   // Clear focus when leaving this screen

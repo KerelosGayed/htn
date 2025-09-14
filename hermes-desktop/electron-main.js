@@ -14,8 +14,8 @@ let mainWindow;
 
 const createWindow = async () => {
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 720,
+    fullscreen: true,
+    frame: false,
     backgroundColor: '#f0fff4', // Light theme background
     autoHideMenuBar: true,
     webPreferences: {
@@ -27,20 +27,20 @@ const createWindow = async () => {
   });
 
   // Check if we're in development by looking for Vite dev server
-  const isDev = !app.isPackaged;
+  const isDev = !app.isPackaged && process.env.NODE_ENV !== 'production';
   const devUrl = 'http://localhost:5173';
   
   if (isDev) {
-    console.log('Loading dev URL:', devUrl);
+    console.log('Development mode detected, attempting to load dev URL:', devUrl);
     try {
       await mainWindow.loadURL(devUrl);
+      console.log('Successfully loaded dev server');
     } catch (error) {
-      console.error('Failed to load dev URL:', error);
-      // Fallback to loading the built files if dev server fails
+      console.log('Dev server not available, falling back to production files:', error.message);
       await mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
     }
   } else {
-    console.log('Loading production files');
+    console.log('Production mode detected, loading built files');
     await mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
   }
 };
@@ -83,61 +83,96 @@ const pythonPath = 'python3';
 
 ipcMain.handle('hermes:steamlink:launch', async () => {
   if (isWindows) return { ok: false, error: 'Steam Link launch supported on Raspberry Pi only.' };
+  
   const script = path.join(repoRoot, 'open_steam_link.sh');
-  const res = await runCommand(bashPath, [script]);
-  return { ok: true, ...res };
+  
+  try {
+    console.log('Attempting to launch Steam Link with script:', script);
+    const res = await runCommand(bashPath, [script]);
+    console.log('Steam Link launch result:', res);
+    return { ok: true, stdout: res.stdout, stderr: res.stderr };
+  } catch (error) {
+    console.error('Steam Link launch failed:', error);
+    return { ok: false, error: error.message, stderr: error.stderr };
+  }
 });
 
 // Volume
 ipcMain.handle('hermes:volume:get', async () => {
-  if (isWindows) return { ok: true, stdout: '50% on' };
-  const py = path.join(repoRoot, 'volume_control.py');
-  const res = await runCommand(pythonPath, [py, '--get']);
-  return { ok: true, ...res };
+  if (isWindows) return { ok: true, stdout: '50% [on]' };
+  try {
+    const res = await runCommand('amixer', ['get', 'Master']);
+    return { ok: true, stdout: res.stdout, stderr: res.stderr };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
 });
 ipcMain.handle('hermes:volume:set', async (_e, pct) => {
   if (isWindows) return { ok: true };
-  const py = path.join(repoRoot, 'volume_control.py');
-  const res = await runCommand(pythonPath, [py, '--set', String(pct)]);
-  return { ok: true, ...res };
+  try {
+    const res = await runCommand('amixer', ['set', 'Master', `${pct}%`]);
+    return { ok: true, stdout: res.stdout, stderr: res.stderr };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
 });
 ipcMain.handle('hermes:volume:inc', async (_e, step = 5) => {
   if (isWindows) return { ok: true };
-  const py = path.join(repoRoot, 'volume_control.py');
-  const res = await runCommand(pythonPath, [py, '--inc', String(step)]);
-  return { ok: true, ...res };
+  try {
+    const res = await runCommand('amixer', ['set', 'Master', `${step}%+`]);
+    return { ok: true, stdout: res.stdout, stderr: res.stderr };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
 });
 ipcMain.handle('hermes:volume:dec', async (_e, step = 5) => {
   if (isWindows) return { ok: true };
-  const py = path.join(repoRoot, 'volume_control.py');
-  const res = await runCommand(pythonPath, [py, '--dec', String(step)]);
-  return { ok: true, ...res };
+  try {
+    const res = await runCommand('amixer', ['set', 'Master', `${step}%-`]);
+    return { ok: true, stdout: res.stdout, stderr: res.stderr };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
 });
 ipcMain.handle('hermes:volume:mute', async () => {
   if (isWindows) return { ok: true };
-  const py = path.join(repoRoot, 'volume_control.py');
-  const res = await runCommand(pythonPath, [py, '--mute']);
-  return { ok: true, ...res };
+  try {
+    const res = await runCommand('amixer', ['set', 'Master', 'mute']);
+    return { ok: true, stdout: res.stdout, stderr: res.stderr };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
 });
 ipcMain.handle('hermes:volume:unmute', async () => {
   if (isWindows) return { ok: true };
-  const py = path.join(repoRoot, 'volume_control.py');
-  const res = await runCommand(pythonPath, [py, '--unmute']);
-  return { ok: true, ...res };
+  try {
+    const res = await runCommand('amixer', ['set', 'Master', 'unmute']);
+    return { ok: true, stdout: res.stdout, stderr: res.stderr };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
 });
 
 // Wi‑Fi via wifi_manage.sh
 ipcMain.handle('hermes:wifi:list', async () => {
   if (isWindows) return { ok: false, error: 'Wi‑Fi manage supported on Raspberry Pi only.' };
   const sh = path.join(repoRoot, 'wifi_manage.sh');
-  const res = await runCommand(bashPath, [sh, 'list']);
-  return { ok: true, ...res };
+  try {
+    const res = await runCommand(bashPath, [sh, 'list']);
+    return { ok: true, stdout: res.stdout, stderr: res.stderr };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
 });
 ipcMain.handle('hermes:wifi:status', async () => {
   if (isWindows) return { ok: false, error: 'Wi‑Fi status supported on Raspberry Pi only.' };
   const sh = path.join(repoRoot, 'wifi_manage.sh');
-  const res = await runCommand(bashPath, [sh, 'status']);
-  return { ok: true, ...res };
+  try {
+    const res = await runCommand(bashPath, [sh, 'status']);
+    return { ok: true, stdout: res.stdout, stderr: res.stderr };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
 });
 ipcMain.handle('hermes:wifi:connect', async (_e, { ssid, pass }) => {
   if (isWindows) return { ok: false, error: 'Wi‑Fi connect supported on Raspberry Pi only.' };
@@ -202,6 +237,10 @@ ipcMain.handle('hermes:system:status', async () => {
   };
   
   const batteryScript = path.join(repoRoot, 'battery_status.py');
-  const res = await runCommand(pythonPath, [batteryScript, '--json']);
-  return { ok: res.code === 0, ...res };
+  try {
+    const res = await runCommand(pythonPath, [batteryScript, '--json']);
+    return { ok: true, stdout: res.stdout, stderr: res.stderr };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
 });

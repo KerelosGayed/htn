@@ -3,9 +3,11 @@ import { motion } from 'framer-motion';
 import { Gamepad2, Settings, Power, PlayCircle, Library } from 'lucide-react';
 import { useGamepadNavigation } from '../../hooks/useGamepadNavigation';
 import { useFocus, useFocusable } from '../../hooks/useFocus';
+import { useVolumeControls } from '../../hooks/useVolumeControls';
 
 export function HomeScreen({ onStart, onSettings, onLibrary }: { onStart: () => void; onSettings: () => void; onLibrary: () => void; }) {
   const { moveFocus, activateFocused, clearFocus } = useFocus();
+  const { handleVolumeUp, handleVolumeDown } = useVolumeControls();
 
   // Set up gamepad navigation
   useGamepadNavigation({
@@ -14,6 +16,8 @@ export function HomeScreen({ onStart, onSettings, onLibrary }: { onStart: () => 
     onDpadLeft: () => moveFocus('left'),
     onDpadRight: () => moveFocus('right'),
     onA: () => activateFocused(),
+    onLeftBumper: handleVolumeUp,
+    onLeftTrigger: handleVolumeDown,
   });
 
   // Clear focus when leaving this screen

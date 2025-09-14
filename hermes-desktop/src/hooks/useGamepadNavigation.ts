@@ -31,6 +31,8 @@ export interface GamepadCallbacks {
   onY?: () => void;
   onStart?: () => void;
   onBack?: () => void;
+  onLeftBumper?: () => void;
+  onLeftTrigger?: () => void;
   onLeftStickMove?: (x: number, y: number) => void;
 }
 
@@ -145,6 +147,14 @@ export function useGamepadNavigation(callbacks: GamepadCallbacks = {}) {
     }
     if (state.buttons.back && !previousState.buttons.back) {
       callbacks.onBack?.();
+    }
+    
+    // Handle volume controls with bumpers/triggers
+    if (state.buttons.lb && !previousState.buttons.lb) {
+      callbacks.onLeftBumper?.(); // Volume up
+    }
+    if (state.buttons.lt && !previousState.buttons.lt) {
+      callbacks.onLeftTrigger?.(); // Volume down
     }
 
     // Handle left stick movement

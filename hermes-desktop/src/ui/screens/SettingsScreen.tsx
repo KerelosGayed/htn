@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Wifi, Bluetooth, Volume2, GaugeCircle, WifiOff, Loader2, VolumeX, Battery, Cpu, Signal } from 'lucide-react';
 import { useGamepadNavigation } from '../../hooks/useGamepadNavigation';
 import { useFocus, useFocusable } from '../../hooks/useFocus';
+import { useVolumeControls } from '../../hooks/useVolumeControls';
 
 interface SystemStatus {
   wifi: {
@@ -28,6 +29,7 @@ interface SystemStatus {
 
 export function SettingsScreen({ onBack }: { onBack: () => void }) {
   const { moveFocus, activateFocused, clearFocus } = useFocus();
+  const { handleVolumeUp, handleVolumeDown } = useVolumeControls();
   const [status, setStatus] = useState<SystemStatus>({
     wifi: { connected: false, status: 'idle' },
     bluetooth: { enabled: false, connected: false, devices: [] },
@@ -171,6 +173,14 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
     onDpadRight: () => moveFocus('right'),
     onA: () => activateFocused(),
     onB: () => onBack(),
+    onLeftBumper: async () => {
+      await handleVolumeUp();
+      loadSystemStatus(); // Reload to show updated volume
+    },
+    onLeftTrigger: async () => {
+      await handleVolumeDown();
+      loadSystemStatus(); // Reload to show updated volume
+    },
   });
 
   // Clear focus when leaving this screen
@@ -212,7 +222,7 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
           </div>
         </Panel>
         
-        <Panel id="panel-volume" title="Volume" icon={status.volume.muted ? <VolumeX /> : <Volume2 />} onActivate={() => handleVolumeControl('mute')}>
+        <Panel id="panel-volume" title="Volume" icon={status.volume.muted ? <VolumeX /> : <Volume2 />}>
           <div className="space-y-[1.5vh]">
             <div className="flex items-center gap-3">
               <div className="flex-1 h-[1vh] rounded bg-leaf-200">
@@ -225,19 +235,8 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
                 {status.volume.muted ? 'MUTE' : `${status.volume.level}%`}
               </div>
             </div>
-            <div className="flex gap-[1vh]">
-              <button 
-                onClick={(e) => { e.stopPropagation(); handleVolumeControl('down'); }}
-                className="px-[1vh] py-[0.5vh] bg-leaf-200 hover:bg-leaf-300 rounded text-[1.6vh] transition-colors"
-              >
-                -
-              </button>
-              <button 
-                onClick={(e) => { e.stopPropagation(); handleVolumeControl('up'); }}
-                className="px-[1vh] py-[0.5vh] bg-leaf-200 hover:bg-leaf-300 rounded text-[1.6vh] transition-colors"
-              >
-                +
-              </button>
+            <div className="text-[1.4vh] opacity-60 text-center">
+              Use Left Bumper/Trigger to adjust volume
             </div>
           </div>
         </Panel>

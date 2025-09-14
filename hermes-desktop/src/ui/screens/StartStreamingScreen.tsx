@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Play, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { useGamepadNavigation } from '../../hooks/useGamepadNavigation';
 import { useFocus, useFocusable } from '../../hooks/useFocus';
+import { useVolumeControls } from '../../hooks/useVolumeControls';
 
 type LaunchStatus = 'idle' | 'launching' | 'success' | 'error';
 
 export function StartStreamingScreen({ onBack }: { onBack: () => void }) {
   const { moveFocus, activateFocused, clearFocus } = useFocus();
+  const { handleVolumeUp, handleVolumeDown } = useVolumeControls();
   const [launchStatus, setLaunchStatus] = useState<LaunchStatus>('idle');
   const [statusMessage, setStatusMessage] = useState<string>('');
   
@@ -69,6 +71,8 @@ export function StartStreamingScreen({ onBack }: { onBack: () => void }) {
     onDpadRight: () => moveFocus('right'),
     onA: () => activateFocused(),
     onB: () => onBack(),
+    onLeftBumper: handleVolumeUp,
+    onLeftTrigger: handleVolumeDown,
   });
 
   // Clear focus when leaving this screen
