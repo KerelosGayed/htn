@@ -27,6 +27,9 @@ declare global {
         disconnect: (mac: string) => Promise<{ ok: boolean; stdout?: string; stderr?: string; error?: string }>;
         scan: (seconds?: number) => Promise<{ ok: boolean; stdout?: string; stderr?: string; error?: string }>;
       };
+      system: {
+        status: () => Promise<{ ok: boolean; stdout?: string; stderr?: string; error?: string }>;
+      };
     };
   }
 }

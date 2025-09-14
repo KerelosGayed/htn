@@ -26,4 +26,7 @@ contextBridge.exposeInMainWorld('hermes', {
     disconnect: (mac) => ipcRenderer.invoke('hermes:bt:disconnect', mac),
     scan: (seconds = 6) => ipcRenderer.invoke('hermes:bt:scan', seconds),
   },
+  system: {
+    status: () => ipcRenderer.invoke('hermes:system:status'),
+  },
 });

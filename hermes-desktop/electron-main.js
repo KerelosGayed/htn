@@ -189,3 +189,19 @@ ipcMain.handle('hermes:bt:scan', async (_e, seconds = 6) => {
   const res = await runCommand('bash', ['-lc', cmd]);
   return { ok: true, ...res };
 });
+
+// System status (battery, CPU temp, etc.)
+ipcMain.handle('hermes:system:status', async () => {
+  if (isWindows) return { 
+    ok: true, 
+    stdout: JSON.stringify({ 
+      cpu_temp: '45.2°C', 
+      battery: 78, 
+      wifi_signal: '-52 dBm' 
+    }) 
+  };
+  
+  const batteryScript = path.join(repoRoot, 'battery_status.py');
+  const res = await runCommand(pythonPath, [batteryScript, '--json']);
+  return { ok: res.code === 0, ...res };
+});
