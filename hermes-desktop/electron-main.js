@@ -441,8 +441,7 @@ ipcMain.handle('hermes:system:status', async () => {
   const workingPythonPath = await findPythonPath();
   console.log('🔧 Using Python path:', workingPythonPath);
   
-  // Check if script exists using Node.js fs (not ES modules)
-  const fs = require('fs');
+  // Check if script exists using Node.js fs
   try {
     if (!fs.existsSync(batteryScript)) {
       console.error('❌ Battery script not found:', batteryScript);
