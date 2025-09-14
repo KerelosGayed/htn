@@ -66,12 +66,29 @@ User=pi
 Environment=DISPLAY=:0
 Environment=PATH=/home/pi/.npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 WorkingDirectory=$HERMES_DIR/hermes-desktop
-ExecStart=/home/pi/.npm-global/bin/npm run dev
+ExecStart=/home/pi/.npm-global/bin/npm run start
 Restart=always
 RestartSec=5
 
 [Install]
 WantedBy=graphical-session.target
+EOF
+
+# Create XDG autostart entry (alternative to systemd)
+echo "🔧 Creating XDG autostart entry..."
+mkdir -p ~/.config/autostart
+tee ~/.config/autostart/hermes.desktop > /dev/null <<EOF
+[Desktop Entry]
+Type=Application
+Name=Hermes Gaming Console
+Comment=Handheld Gaming Console UI
+Exec=/home/pi/.npm-global/bin/npm run dev
+Path=$HERMES_DIR/hermes-desktop
+Terminal=false
+StartupNotify=false
+Categories=Game;
+Icon=applications-games
+X-GNOME-Autostart-enabled=true
 EOF
 
 # Enable service (user can disable if not wanted)
@@ -81,14 +98,22 @@ sudo systemctl enable hermes.service
 
 echo "✅ Hermes deployment complete!"
 echo ""
-echo "🎮 To start Hermes:"
-echo "   sudo systemctl start hermes.service"
+echo "🔄 Auto-startup configured:"
+echo "   • Systemd service: hermes.service"
+echo "   • XDG autostart: ~/.config/autostart/hermes.desktop"
 echo ""
-echo "🎯 To start manually:"
+echo "� To start Hermes manually:"
 echo "   cd $HERMES_DIR/hermes-desktop && npm run start"
+echo ""
+echo "🎯 To start via systemd:"
+echo "   sudo systemctl start hermes.service"
 echo ""
 echo "📊 To check status:"
 echo "   sudo systemctl status hermes.service"
+echo ""
+echo "🛠️  To disable auto-startup:"
+echo "   sudo systemctl disable hermes.service"
+echo "   rm ~/.config/autostart/hermes.desktop"
 echo ""
 echo "🧪 To test backend scripts:"
 echo "   ./battery_status.py --json"
