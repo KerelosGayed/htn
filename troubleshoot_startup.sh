@@ -38,7 +38,8 @@ fi
 echo ""
 echo "🔧 Checking Node.js environment..."
 if command -v npm >/dev/null 2>&1; then
-    echo "✅ npm found: $(npm --version)"
+    NPM_PATH=$(command -v npm)
+    echo "✅ npm found: $(npm --version) at $NPM_PATH"
 else
     echo "❌ npm not found"
 fi

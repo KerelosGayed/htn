@@ -1,6 +1,21 @@
 #!/usr/bin/env bash
 # Deployment script for Hermes on Raspberry Pi
-# Run this on the Pi after copying all files
+# Run this on the # Create XDG autostart entry (alternative to systemd)
+echo "🔧 Creating XDG autostart entry..."
+mkdir -p ~/.config/autostart
+tee ~/.config/autostart/hermes.desktop > /dev/null <<EOF
+[Desktop Entry]
+Type=Application
+Name=Hermes Gaming Console
+Comment=Handheld Gaming Console UI
+Exec=$NPM_PATH run start
+Path=$HERMES_DIR/hermes-desktop
+Terminal=false
+StartupNotify=false
+Categories=Game;
+Icon=applications-games
+X-GNOME-Autostart-enabled=true
+EOF all files
 
 set -euo pipefail
 
@@ -56,6 +71,11 @@ npm run build
 
 # Create systemd service for auto-startup (optional)
 echo "⚙️  Setting up auto-start service..."
+
+# Detect npm path
+NPM_PATH=$(command -v npm)
+echo "📍 Detected npm path: $NPM_PATH"
+
 sudo tee /etc/systemd/system/hermes.service > /dev/null <<EOF
 [Unit]
 Description=Hermes Gaming Console
@@ -70,7 +90,7 @@ Environment=DISPLAY=:0
 Environment=HOME=/home/pi
 Environment=PATH=/home/pi/.npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 WorkingDirectory=$HERMES_DIR/hermes-desktop
-ExecStart=/home/pi/.npm-global/bin/npm run dev
+ExecStart=$NPM_PATH run dev
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -88,7 +108,7 @@ tee ~/.config/autostart/hermes.desktop > /dev/null <<EOF
 Type=Application
 Name=Hermes Gaming Console
 Comment=Handheld Gaming Console UI
-Exec=/home/pi/.npm-global/bin/npm run dev
+Exec=$NPM_PATH run dev
 Path=$HERMES_DIR/hermes-desktop
 Terminal=false
 StartupNotify=false
