@@ -69,7 +69,7 @@ function Panel({ id, title, icon, children }: { id: string; title: string; icon:
       tabIndex={isFocused ? 0 : -1}
     >
       <div className="mb-[1.6vh] flex items-center gap-2 text-[2.6vh] font-semibold">
-        <span className="opacity-90">{icon}</span>
+        <span className="opacity-90">{React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any, any>, ({ ...(icon as any).props, className: `${(icon as any).props?.className ?? ''} w-[3.6vh] h-[3.6vh]`} as any)) : icon}</span>
         <h3 className="opacity-90">{title}</h3>
       </div>
       <div>{children}</div>
@@ -88,7 +88,7 @@ function BackButton({ id, onBack }: { id: string; onBack: () => void }) {
       className={`rounded-xl bg-leaf-100 px-[2vh] py-[1.2vh] hover:bg-leaf-200 border border-leaf-300 focus:outline-none ${focusClass} transition-all duration-200`}
       tabIndex={isFocused ? 0 : -1}
     >
-      <div className="flex items-center gap-2 text-[2.4vh]"><ArrowLeft /> Back</div>
+      <div className="flex items-center gap-2 text-[2.4vh]">{React.isValidElement(ArrowLeft) ? React.cloneElement(ArrowLeft as React.ReactElement<any, any>, ({ ...(ArrowLeft as any).props, className: `${(ArrowLeft as any).props?.className ?? ''} w-[3vh] h-[3vh]`} as any)) : <ArrowLeft />} Back</div>
     </button>
   );
 }

@@ -4,7 +4,51 @@
 
 :root { color-scheme: light; }
 
-html, body, #root { height: 100%; font-size: 18px; }
+html, body {
+  height: 100%;
+  font-size: 25px; /* Increase base font size (~25% larger) */
+  font-weight: 700; /* Make all text bold */
+  letter-spacing: 0.02em;
+  background: transparent; /* allow background image to show through */
+}
+
+#root {
+  height: 100%;
+  position: relative; /* create stacking context */
+  z-index: 1; /* ensure app content sits above the background pseudo-element */
+  background: transparent;
+}
+/* Make all text bolder and bigger */
+*, *::before, *::after {
+  font-weight: 700 !important; /* Force bold everywhere */
+  font-family: inherit;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-size: 2em;
+  font-weight: 900 !important;
+  letter-spacing: 0.03em;
+}
+
+p, span, label, button, input, textarea, a, li, td, th {
+  font-size: 1.2em;
+  font-weight: 700 !important;
+}
+
+/* Placeholder background image (25% opacity). Replace the URL below as needed.
+   Example placeholder URL: https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=2500&q=80
+*/
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url('https://static.vecteezy.com/system/resources/thumbnails/029/748/669/small_2x/bright-morning-landscape-with-pink-sky-branches-of-blooming-white-cherry-trees-on-the-background-of-mount-fuji-traditional-japanese-festival-hanami-cherry-blossom-in-early-spring-flat-illustration-vector.jpg');
+  background-size: cover;
+  background-position: center center;
+  opacity: 0.40; /* 25% visible */
+  pointer-events: none; /* allow clicks through */
+  z-index: 0; /* behind app content but above page background */
+}
 
 /* Focus ring helper for gamepad/keyboard */
 *:focus-visible {

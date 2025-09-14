@@ -13,7 +13,7 @@ export default function App() {
 
   return (
     <FocusProvider>
-      <div className="min-h-screen w-screen overflow-hidden bg-gradient-to-b from-white to-leaf-50 text-black">
+  <div className="min-h-screen w-screen overflow-hidden text-black">
         <AnimatePresence mode="wait">
           <motion.div
             key={screen}

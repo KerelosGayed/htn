@@ -34,8 +34,6 @@ const createWindow = async () => {
     console.log('Loading dev URL:', devUrl);
     try {
       await mainWindow.loadURL(devUrl);
-      // Open DevTools in development
-      mainWindow.webContents.openDevTools();
     } catch (error) {
       console.error('Failed to load dev URL:', error);
       // Fallback to loading the built files if dev server fails

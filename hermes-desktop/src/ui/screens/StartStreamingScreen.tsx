@@ -65,7 +65,7 @@ function BackButton({ id, onBack }: { id: string; onBack: () => void }) {
       className={`rounded-xl bg-leaf-100 px-[2vh] py-[1.2vh] hover:bg-leaf-200 border border-leaf-300 focus:outline-none ${focusClass} transition-all duration-200`}
       tabIndex={isFocused ? 0 : -1}
     >
-      <div className="flex items-center gap-2 text-[2.4vh]"><ArrowLeft /> Back</div>
+    <div className="flex items-center gap-2 text-[2.4vh]">{React.isValidElement(ArrowLeft) ? React.cloneElement(ArrowLeft as React.ReactElement<any, any>, ({ ...(ArrowLeft as any).props, className: `${(ArrowLeft as any).props?.className ?? ''} w-[3vh] h-[3vh]`} as any)) : <ArrowLeft />} Back</div>
     </button>
   );
 }
@@ -82,7 +82,7 @@ function ProviderButton({ id, name, onActivate }: { id: string; name: string; on
       tabIndex={isFocused ? 0 : -1}
     >
       <div className="h-full w-full flex flex-col items-center justify-center gap-[2vh]">
-        <Play className="text-[5vh] text-leaf-800" />
+  {React.isValidElement(Play) ? React.cloneElement(Play as React.ReactElement<any, any>, ({ ...(Play as any).props, className: `${(Play as any).props?.className ?? ''} w-[7.5vh] h-[7.5vh] text-leaf-800`} as any)) : <Play className="text-[7.5vh] text-leaf-800" />}
         <div className="text-[2.4vh] text-leaf-900">{name}</div>
       </div>
     </button>
