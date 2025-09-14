@@ -43,8 +43,8 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
   }, []);
 
   const loadSystemStatus = async () => {
+    // Load Wi-Fi status
     try {
-      // Load Wi-Fi status
       const wifiResult = await (window as any).hermes?.wifi?.status();
       if (wifiResult?.ok) {
         // Parse wifi status from stdout
@@ -54,8 +54,12 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
           wifi: { ...prev.wifi, connected: wifiConnected, status: 'idle' }
         }));
       }
+    } catch (error) {
+      console.error('Error loading Wi-Fi status:', error);
+    }
 
-      // Load volume
+    // Load volume
+    try {
       const volumeResult = await (window as any).hermes?.volume?.get();
       if (volumeResult?.ok) {
         // Parse volume from stdout (format: "55%" and "[on]" or "[off]")
@@ -70,8 +74,12 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
           }));
         }
       }
+    } catch (error) {
+      console.error('Error loading volume status:', error);
+    }
 
-      // Load Bluetooth status
+    // Load Bluetooth status
+    try {
       const btResult = await (window as any).hermes?.bt?.paired();
       if (btResult?.ok) {
         const devices = btResult.stdout?.split('\n').filter((line: string) => line.trim().length > 0) || [];
@@ -80,8 +88,12 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
           bluetooth: { ...prev.bluetooth, devices }
         }));
       }
+    } catch (error) {
+      console.error('Error loading Bluetooth status:', error);
+    }
 
-      // Load system status (battery, CPU temp, wifi signal)
+    // Load system status (battery, CPU temp, wifi signal)
+    try {
       console.log('🔍 Frontend: Loading system status...');
       const systemResult = await (window as any).hermes?.system?.status();
       console.log('📊 Frontend: System result:', systemResult);
@@ -101,14 +113,14 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
             }
           }));
           console.log('✅ Frontend: System status updated successfully');
-        } catch (error) {
-          console.error('❌ Frontend: Error parsing system status:', error);
+        } catch (parseError) {
+          console.error('❌ Frontend: Error parsing system status:', parseError);
         }
       } else {
         console.error('❌ Frontend: System status request failed:', systemResult);
       }
     } catch (error) {
-      console.error('Error loading system status:', error);
+      console.error('❌ Frontend: Error loading system status:', error);
     }
   };
 
