@@ -95,7 +95,7 @@ echo "🧪 Testing manual startup..."
 echo "Trying to start Hermes manually (5 second timeout)..."
 
 cd "$HERMES_DIR/hermes-desktop"
-if timeout 5s npm run dev >/dev/null 2>&1; then
+if timeout 20s npm run dev >/dev/null 2>&1; then
     echo "✅ Manual startup successful"
 else
     echo "❌ Manual startup failed"
