@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; }
+
+html, body, #root { height: 100%; font-size: 18px; }
+
+/* Focus ring helper for gamepad/keyboard */
+*:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 0.4vh rgba(34, 197, 94, 0.5);
+}

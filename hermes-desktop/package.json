@@ -1,0 +1,39 @@
+{
+  "name": "hermes-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "electron-main.js",
+  "productName": "Hermes",
+  "description": "Hermes handheld streaming console UI (Electron + React + Tailwind)",
+  "author": "",
+  "scripts": {
+    "dev": "concurrently -k \"vite\" \"wait-on tcp:5173 && electron .\"",
+    "build": "vite build && electron-builder",
+    "lint": "eslint .",
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "@electron/notarize": "^2.5.0",
+    "@types/node": "^20.11.30",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "autoprefixer": "^10.4.16",
+    "concurrently": "^8.2.2",
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3",
+    "eslint": "^8.57.0",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.9.2",
+    "vite": "^5.2.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "wait-on": "^7.2.0"
+  },
+  "dependencies": {
+    "framer-motion": "^11.0.0",
+    "lucide-react": "^0.452.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}
