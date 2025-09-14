@@ -90,7 +90,7 @@ ipcMain.handle('hermes:steamlink:launch', async () => {
     console.log('Attempting to launch Steam Link with script:', script);
     const res = await runCommand(bashPath, [script]);
     console.log('Steam Link launch result:', res);
-    return { ok: true, stdout: res.stdout, stderr: res.stderr };
+    return { ok: true, message: 'Steam Link launched successfully', stdout: res.stdout, stderr: res.stderr };
   } catch (error) {
     console.error('Steam Link launch failed:', error);
     return { ok: false, error: error.message, stderr: error.stderr };
