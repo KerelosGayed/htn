@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+const { contextBridge, ipcRenderer } = require('electron');
 
 // Safe, minimal API surface for frontend
 contextBridge.exposeInMainWorld('hermes', {
