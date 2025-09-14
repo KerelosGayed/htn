@@ -1,60 +1,204 @@
-# Hermes (Electron + React + Tailwind)
+# Hermes 🎮
 
-A sleek, console-style UI for the Hermes handheld streaming device with **full Xbox 360 controller support**.
+> A custom Raspberry Pi 4-powered handheld game streaming console with seamless Xbox 360 controller navigation.
 
-## Features
-- **Home**: Start Streaming, Settings, Library, Sleep/Shutdown stub
-- **Start Streaming**: Steam Link, Moonlight, Parsec cards (60% width responsive)
-- **Library**: responsive box-art grid (placeholder games)
-- **Settings**: Wi‑Fi, Bluetooth, Volume, System stats (ready for backend integration)
-- **Complete Gamepad Navigation**: Seamless Xbox 360 controller support
-- **Visual Focus System**: Clear focus indicators with smooth transitions
-- **Intuitive Controls**: A=Select, B=Back, D-Pad/Left Stick=Navigate
+**Hermes** transforms your Raspberry Pi 4 into a portable game streaming device, letting you play PC games wirelessly via Steam Link, Moonlight, or Parsec. Built with a console-style interface optimized for handheld gaming.
 
-## Xbox 360 Controller Support
+## ✨ Features
 
-### Navigation Controls
-- **D-Pad** or **Left Stick**: Navigate between menu items
-- **A Button**: Select/Activate focused item
-- **B Button**: Go back to previous screen
-- **Start Button**: (reserved for future menu access)
-- **Back Button**: (reserved for future quick settings)
+### 🎯 Complete Gaming Interface
+- **Home Screen**: Quick access to streaming, settings, and library
+- **Start Streaming**: Launch Steam Link, Moonlight, or Parsec with one click
+- **Game Library**: Browse and launch games with responsive grid layout
+- **System Settings**: Full control over Wi-Fi, Bluetooth, volume, and system status
 
-### Focus System
-- Clear visual focus indicators with green rings
-- Smooth animations when moving between items
-- Auto-scroll for off-screen items
-- Context-aware navigation (grid vs linear layouts)
+### 🎮 Xbox 360 Controller Support
+- **Seamless Navigation**: D-Pad and Left Stick for menu navigation
+- **Intuitive Controls**: A=Select, B=Back, with visual focus indicators
+- **Real-time Feedback**: Smooth animations and clear focus rings
+- **Context-aware**: Adapts to different screen layouts (grid vs linear)
 
-### Per-Screen Navigation
-- **Home**: Navigate tiles and action buttons
-- **Start Streaming**: Navigate provider cards and back button
-- **Settings**: Navigate panels and back button (A opens detailed settings)
-- **Library**: Navigate game grid and back button (A launches games)
+### 🔧 Raspberry Pi Integration
+- **Wi-Fi Management**: Scan, connect, and manage wireless networks
+- **Bluetooth Control**: Pair controllers and manage Bluetooth devices  
+- **Volume Control**: Real-time audio adjustment with visual feedback
+- **System Monitoring**: CPU temperature, battery level, and signal strength
+- **Auto-startup**: Optional systemd service for boot-to-console experience
 
-## Dev on Windows
-1. Install Node.js 18+.
-2. Connect your Xbox 360 controller (wired or wireless)
-3. In PowerShell:
+### 🎨 Modern UI/UX
+- **Console-style Design**: Clean, gaming-focused interface
+- **Responsive Layout**: Optimized for handheld screens
+- **Smooth Animations**: Framer Motion transitions between screens
+- **Beautiful Styling**: Custom background and focus effects
 
+## 🚀 Setup on Raspberry Pi 4
+
+### Prerequisites
+You'll need a fresh Raspberry Pi OS installation and an internet connection.
+
+### 1. Install System Dependencies
+
+```bash
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install required packages
+sudo apt install -y \
+    steamlink \
+    alsa-utils \
+    network-manager \
+    bluetooth \
+    bluez \
+    bluez-tools \
+    i2c-tools \
+    wireless-tools \
+    curl \
+    git
+```
+
+### 2. Install Node.js 18+
+
+```bash
+# Install Node.js via NodeSource
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# Verify installation
+node --version  # Should show v18.x.x
+npm --version   # Should show 9.x.x or higher
+```
+
+### 3. Clone and Deploy Hermes
+
+```bash
+# Clone the repository
+cd ~
+git clone https://github.com/YourUsername/htn.git hermes
+cd hermes
+
+# Run the deployment script
+chmod +x deploy_to_pi.sh
+./deploy_to_pi.sh
+```
+
+The deployment script will:
+- Set proper permissions on all scripts
+- Install Node.js dependencies  
+- Build the application
+- Create a systemd service for auto-startup
+- Configure the system for optimal performance
+
+### 4. Connect Your Xbox 360 Controller
+
+**Wired Controller:**
+```bash
+# Plug in via USB - should work automatically
+# Test with: jstest /dev/input/js0
+```
+
+**Wireless Controller:**
+```bash
+# Put controller in pairing mode (hold Xbox + pair buttons)
+sudo bluetoothctl
+> scan on
+> pair [CONTROLLER_MAC_ADDRESS]
+> trust [CONTROLLER_MAC_ADDRESS]  
+> connect [CONTROLLER_MAC_ADDRESS]
+> exit
+```
+
+### 5. Start Hermes
+
+**Manual start:**
+```bash
+cd ~/hermes/hermes-desktop
+npm run start
+```
+
+**Auto-start service:**
+```bash
+# Enable auto-start on boot
+sudo systemctl enable hermes.service
+sudo systemctl start hermes.service
+
+# Check status
+sudo systemctl status hermes.service
+```
+
+## 🎮 Usage
+
+1. **Power on** your Raspberry Pi with Hermes installed
+2. **Connect** your Xbox 360 controller (wired or wireless)
+3. **Navigate** using D-Pad or Left Stick
+4. **Select** items with A button, **go back** with B button
+5. **Configure** Wi-Fi and settings from the Settings screen
+6. **Launch** Steam Link or other streaming services from Start Streaming
+
+## 🛠️ Troubleshooting
+
+**Steam Link not launching?**
+```bash
+# Test Steam Link manually
+steamlink --help
+# Or try Flatpak version
+flatpak install flathub com.valvesoftware.SteamLink
+```
+
+**Controller not detected?**
+```bash
+# Check for connected controllers
+jstest /dev/input/js0
+# Or list all input devices  
+ls /dev/input/js*
+```
+
+**Wi-Fi not working?**
+```bash
+# Test Wi-Fi script manually
+./wifi_manage.sh status
+./wifi_manage.sh list
+```
+
+**Audio issues?**
+```bash
+# Test volume control
+python3 ./volume_control.py
+# Or check ALSA
+amixer get Master
+```
+
+## 🔧 Development
+
+**On Windows (for development):**
 ```powershell
 cd .\hermes-desktop
 npm install
 npm run dev
 ```
 
-This starts Vite and Electron with full gamepad support. Connect your controller and start navigating!
-
-## Build
-```powershell
+**Build for production:**
+```bash
 npm run build
 ```
-Artifacts will be in `dist/` and packaged by electron-builder.
 
-## Raspberry Pi notes
-- Electron on ARM works; keep versions pinned in `package.json`
-- Use the same `npm ci` for reproducible installs
-- Backend scripts (Steam Link, Wi‑Fi, volume) exist in the repo root and are **fully integrated** via IPC
+## 📁 Project Structure
+
+```
+htn/
+├── hermes-desktop/          # Electron + React app
+│   ├── src/                 # Frontend source code
+│   ├── electron-main.js     # Main Electron process
+│   └── package.json         # Dependencies and scripts
+├── open_steam_link.sh       # Steam Link launcher script
+├── wifi_manage.sh          # Wi-Fi management script
+├── volume_control.py       # Volume control script
+├── battery_status.py       # Battery monitoring script
+└── deploy_to_pi.sh         # Automated deployment script
+```
+
+## 📝 License
+
+MIT License - feel free to modify and distribute for your own handheld projects!
 - Xbox controllers work great on Raspberry Pi OS with proper USB/Bluetooth setup
 
 ## Technical Architecture
