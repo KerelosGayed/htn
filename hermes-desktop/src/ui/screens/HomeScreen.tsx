@@ -1,8 +1,26 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Gamepad2, Settings, Power, PlayCircle, Library } from 'lucide-react';
+import { useGamepadNavigation } from '../../hooks/useGamepadNavigation';
+import { useFocus, useFocusable } from '../../hooks/useFocus';
 
 export function HomeScreen({ onStart, onSettings, onLibrary }: { onStart: () => void; onSettings: () => void; onLibrary: () => void; }) {
+  const { moveFocus, activateFocused, clearFocus } = useFocus();
+
+  // Set up gamepad navigation
+  useGamepadNavigation({
+    onDpadUp: () => moveFocus('up'),
+    onDpadDown: () => moveFocus('down'),
+    onDpadLeft: () => moveFocus('left'),
+    onDpadRight: () => moveFocus('right'),
+    onA: () => activateFocused(),
+  });
+
+  // Clear focus when leaving this screen
+  useEffect(() => {
+    return () => clearFocus();
+  }, [clearFocus]);
+
   return (
     <div className="h-screen w-screen p-[4vh] flex flex-col gap-[3vh]">
       <header className="flex items-center justify-between">
@@ -22,17 +40,17 @@ export function HomeScreen({ onStart, onSettings, onLibrary }: { onStart: () => 
             transition={{ type: 'spring', stiffness: 140, damping: 18 }}
           >
             <div className="grid grid-cols-3 gap-[2vh] text-[2.4vh]">
-              <Tile title="Steam Link" icon={<PlayCircle />} accent="leaf" />
-              <Tile title="Moonlight" icon={<PlayCircle />} accent="leaf" />
-              <Tile title="Parsec" icon={<PlayCircle />} accent="leaf" />
+              <Tile id="tile-steamlink" title="Steam Link" icon={<PlayCircle />} accent="leaf" onActivate={onStart} />
+              <Tile id="tile-moonlight" title="Moonlight" icon={<PlayCircle />} accent="leaf" onActivate={onStart} />
+              <Tile id="tile-parsec" title="Parsec" icon={<PlayCircle />} accent="leaf" onActivate={onStart} />
             </div>
           </motion.div>
         </div>
 
         <nav className="grid grid-cols-3 gap-[2vh]">
-          <ActionButton label="Start Streaming" icon={<PlayCircle />} onClick={onStart} accent="leaf" />
-          <ActionButton label="Settings" icon={<Settings />} onClick={onSettings} />
-          <ActionButton label="Library" icon={<Library />} onClick={onLibrary} />
+          <ActionButton id="action-start" label="Start Streaming" icon={<PlayCircle />} onClick={onStart} accent="leaf" />
+          <ActionButton id="action-settings" label="Settings" icon={<Settings />} onClick={onSettings} />
+          <ActionButton id="action-library" label="Library" icon={<Library />} onClick={onLibrary} />
         </nav>
       </div>
 
@@ -46,12 +64,23 @@ export function HomeScreen({ onStart, onSettings, onLibrary }: { onStart: () => 
   );
 }
 
-function Tile({ title, icon, accent = 'leaf' }: { title: string; icon: React.ReactNode; accent?: 'leaf' }) {
-  const ring = 'focus:ring-leaf-400/60';
+function Tile({ id, title, icon, accent = 'leaf', onActivate }: { 
+  id: string; 
+  title: string; 
+  icon: React.ReactNode; 
+  accent?: 'leaf';
+  onActivate?: () => void;
+}) {
+  const { elementRef, isFocused } = useFocusable(id, onActivate);
+  const ring = isFocused ? 'ring-4 ring-leaf-400/80' : 'focus:ring-4 focus:ring-leaf-400/60';
+  
   return (
-  <button className={`group relative aspect-[5/3] w-full rounded-2xl bg-leaf-200 hover:bg-leaf-300 border border-leaf-300 shadow focus:outline-none focus:ring-4 ${ring} transition-colors`}
-      tabIndex={0}
+    <button 
+      ref={elementRef as React.RefObject<HTMLButtonElement>}
+      className={`group relative aspect-[5/3] w-full rounded-2xl bg-leaf-200 hover:bg-leaf-300 border border-leaf-300 shadow focus:outline-none ${ring} transition-all duration-200`}
+      tabIndex={isFocused ? 0 : -1}
       aria-label={title}
+      onClick={onActivate}
     >
       <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-white/50 to-transparent" />
       <div className="relative z-10 h-full w-full flex flex-col items-center justify-center gap-[2vh]">
@@ -62,10 +91,24 @@ function Tile({ title, icon, accent = 'leaf' }: { title: string; icon: React.Rea
   );
 }
 
-function ActionButton({ label, icon, onClick, accent }: { label: string; icon: React.ReactNode; onClick: () => void; accent?: 'leaf' }) {
+function ActionButton({ id, label, icon, onClick, accent }: { 
+  id: string;
+  label: string; 
+  icon: React.ReactNode; 
+  onClick: () => void; 
+  accent?: 'leaf';
+}) {
+  const { elementRef, isFocused } = useFocusable(id, onClick);
   const accentClass = accent === 'leaf' ? 'bg-leaf-500 hover:bg-leaf-400 text-white shadow-glow' : 'bg-leaf-100 hover:bg-leaf-200 text-black border border-leaf-300';
+  const focusClass = isFocused ? 'ring-4 ring-leaf-400/80' : 'focus:ring-4 focus:ring-leaf-400/50';
+  
   return (
-    <button onClick={onClick} className={`flex items-center justify-center gap-3 rounded-2xl py-[2.6vh] ${accentClass} transition-colors focus:outline-none focus:ring-4 focus:ring-leaf-400/50`}>
+    <button 
+      ref={elementRef as React.RefObject<HTMLButtonElement>}
+      onClick={onClick} 
+      className={`flex items-center justify-center gap-3 rounded-2xl py-[2.6vh] ${accentClass} transition-all duration-200 focus:outline-none ${focusClass}`}
+      tabIndex={isFocused ? 0 : -1}
+    >
       <span className="text-[2.6vh]">{icon}</span>
       <span className="text-[2.6vh] font-medium tracking-wide">{label}</span>
     </button>
