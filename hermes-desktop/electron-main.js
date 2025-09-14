@@ -20,7 +20,7 @@ const createWindow = async () => {
     backgroundColor: '#f0fff4', // Light theme background
     autoHideMenuBar: true,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload.cjs'),
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: false, // Disable sandbox to allow IPC
