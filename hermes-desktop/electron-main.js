@@ -64,15 +64,29 @@ const isWindows = process.platform === 'win32';
 
 function runCommand(cmd, args, options = {}) {
   return new Promise((resolve, reject) => {
-    const child = spawn(cmd, args, { cwd: repoRoot, shell: false, ...options });
+    // For shell scripts, we need to ensure proper execution
+    const execOptions = { 
+      cwd: repoRoot, 
+      shell: false,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      ...options 
+    };
+    
+    console.log(`Executing command: ${cmd} ${args.join(' ')}`);
+    const child = spawn(cmd, args, execOptions);
+    
     let stdout = '';
     let stderr = '';
     child.stdout?.on('data', d => (stdout += d.toString()));
     child.stderr?.on('data', d => (stderr += d.toString()));
-    child.on('error', reject);
+    child.on('error', (error) => {
+      console.error('Command execution error:', error);
+      reject(error);
+    });
     child.on('close', code => {
+      console.log(`Command exited with code: ${code}`);
       if (code === 0) resolve({ code, stdout, stderr });
-      else reject(new Error(stderr || `Exited ${code}`));
+      else reject(new Error(stderr || `Process exited with code ${code}`));
     });
   });
 }
@@ -82,18 +96,29 @@ const bashPath = '/bin/bash';
 const pythonPath = 'python3';
 
 ipcMain.handle('hermes:steamlink:launch', async () => {
-  if (isWindows) return { ok: false, error: 'Steam Link launch supported on Raspberry Pi only.' };
+  if (isWindows) {
+    return { ok: false, error: 'Steam Link launch supported on Raspberry Pi only. Please deploy to your Pi first.' };
+  }
   
   const script = path.join(repoRoot, 'open_steam_link.sh');
   
   try {
     console.log('Attempting to launch Steam Link with script:', script);
+    
+    // First ensure the script is executable (this will fail silently if already executable)
+    try {
+      await runCommand('chmod', ['+x', script]);
+    } catch (chmodError) {
+      console.warn('Could not make script executable (may already be executable):', chmodError.message);
+    }
+    
+    // Now execute the script
     const res = await runCommand(bashPath, [script]);
     console.log('Steam Link launch result:', res);
     return { ok: true, message: 'Steam Link launched successfully', stdout: res.stdout, stderr: res.stderr };
   } catch (error) {
     console.error('Steam Link launch failed:', error);
-    return { ok: false, error: error.message, stderr: error.stderr };
+    return { ok: false, error: `Failed to launch Steam Link: ${error.message}`, stderr: error.stderr };
   }
 });
 
