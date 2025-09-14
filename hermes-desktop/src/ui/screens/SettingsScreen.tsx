@@ -82,10 +82,16 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
       }
 
       // Load system status (battery, CPU temp, wifi signal)
+      console.log('🔍 Frontend: Loading system status...');
       const systemResult = await (window as any).hermes?.system?.status();
+      console.log('📊 Frontend: System result:', systemResult);
+      
       if (systemResult?.ok) {
         try {
+          console.log('📝 Frontend: Raw system stdout:', systemResult.stdout);
           const systemData = JSON.parse(systemResult.stdout || '{}');
+          console.log('📋 Frontend: Parsed system data:', systemData);
+          
           setStatus(prev => ({
             ...prev,
             system: {
@@ -94,9 +100,12 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
               wifiSignal: systemData.wifi_signal
             }
           }));
+          console.log('✅ Frontend: System status updated successfully');
         } catch (error) {
-          console.error('Error parsing system status:', error);
+          console.error('❌ Frontend: Error parsing system status:', error);
         }
+      } else {
+        console.error('❌ Frontend: System status request failed:', systemResult);
       }
     } catch (error) {
       console.error('Error loading system status:', error);

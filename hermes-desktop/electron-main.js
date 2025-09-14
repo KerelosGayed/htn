@@ -130,7 +130,24 @@ function runCommand(cmd, args, options = {}) {
 
 // Use bash/python on Linux/RPi; return friendly message on Windows
 const bashPath = '/bin/bash';
-const pythonPath = 'python3';
+const pythonPaths = ['python3', 'python', '/usr/bin/python3', '/usr/bin/python'];
+
+// Helper function to find working Python path
+async function findPythonPath() {
+  for (const pythonPath of pythonPaths) {
+    try {
+      const res = await runCommand(pythonPath, ['--version']);
+      if (res.ok) {
+        console.log(`✅ Found working Python: ${pythonPath}`);
+        return pythonPath;
+      }
+    } catch (error) {
+      console.log(`❌ Python ${pythonPath} not found:`, error.message);
+    }
+  }
+  console.error('❌ No working Python found');
+  return 'python3'; // fallback
+}
 
 ipcMain.handle('hermes:steamlink:launch', async () => {
   console.log('=== Steam Link Launch Request Received ===');
@@ -391,20 +408,57 @@ ipcMain.handle('hermes:bt:scan', async (_e, seconds = 6) => {
 
 // System status (battery, CPU temp, etc.)
 ipcMain.handle('hermes:system:status', async () => {
-  if (isWindows) return { 
-    ok: true, 
-    stdout: JSON.stringify({ 
-      cpu_temp: '45.2°C', 
-      battery: 78, 
-      wifi_signal: '-52 dBm' 
-    }) 
-  };
+  console.log('🔍 System status requested');
+  console.log('📊 isWindows:', isWindows);
+  console.log('📁 repoRoot:', repoRoot);
+  
+  if (isWindows) {
+    console.log('💻 Returning Windows mock data');
+    return { 
+      ok: true, 
+      stdout: JSON.stringify({ 
+        cpu_temp: '45.2°C', 
+        battery: 78, 
+        wifi_signal: '-52 dBm' 
+      }) 
+    };
+  }
   
   const batteryScript = path.join(repoRoot, 'battery_status.py');
+  console.log('🐍 Battery script path:', batteryScript);
+  
+  // Find working Python path
+  const workingPythonPath = await findPythonPath();
+  console.log('🔧 Using Python path:', workingPythonPath);
+  
+  // Check if script exists
   try {
-    const res = await runCommand(pythonPath, [batteryScript, '--json']);
-    return { ok: true, stdout: res.stdout, stderr: res.stderr };
+    const fs = await import('fs');
+    if (!fs.existsSync(batteryScript)) {
+      console.error('❌ Battery script not found:', batteryScript);
+      return { ok: false, error: `Script not found: ${batteryScript}` };
+    }
+    console.log('✅ Battery script exists');
+  } catch (fsError) {
+    console.error('❌ Error checking script existence:', fsError);
+    return { ok: false, error: `Cannot check script: ${fsError.message}` };
+  }
+  
+  try {
+    console.log('🚀 Running command:', workingPythonPath, [batteryScript, '--json']);
+    const res = await runCommand(workingPythonPath, [batteryScript, '--json']);
+    console.log('📊 Command result:', res);
+    
+    if (res.ok) {
+      console.log('✅ System status success - stdout:', res.stdout);
+      console.log('⚠️  System status stderr:', res.stderr);
+      return { ok: true, stdout: res.stdout, stderr: res.stderr };
+    } else {
+      console.error('❌ System status command failed:', res);
+      return { ok: false, error: res.error || res.stderr || 'Command failed' };
+    }
   } catch (error) {
+    console.error('❌ System status error:', error);
     return { ok: false, error: error.message };
   }
 });
