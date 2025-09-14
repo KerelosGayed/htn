@@ -66,7 +66,7 @@ User=pi
 Environment=DISPLAY=:0
 Environment=PATH=/home/pi/.npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 WorkingDirectory=$HERMES_DIR/hermes-desktop
-ExecStart=/home/pi/.npm-global/bin/npm run start
+ExecStart=/home/pi/.npm-global/bin/npm run dev
 Restart=always
 RestartSec=5
 
