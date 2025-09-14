@@ -194,11 +194,11 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
     onDpadRight: () => moveFocus('right'),
     onA: () => activateFocused(),
     onB: () => onBack(),
-    onLeftBumper: async () => {
+    onY: async () => {
       await handleVolumeUp();
       loadSystemStatus(); // Reload to show updated volume
     },
-    onLeftTrigger: async () => {
+    onX: async () => {
       await handleVolumeDown();
       loadSystemStatus(); // Reload to show updated volume
     },

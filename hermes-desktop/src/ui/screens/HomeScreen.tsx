@@ -16,8 +16,8 @@ export function HomeScreen({ onStart, onSettings, onLibrary }: { onStart: () => 
     onDpadLeft: () => moveFocus('left'),
     onDpadRight: () => moveFocus('right'),
     onA: () => activateFocused(),
-    onLeftBumper: handleVolumeUp,
-    onLeftTrigger: handleVolumeDown,
+    onY: handleVolumeUp,
+    onX: handleVolumeDown,
   });
 
   // Clear focus when leaving this screen

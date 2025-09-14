@@ -22,8 +22,8 @@ export function LibraryScreen({ onBack }: { onBack: () => void }) {
     onDpadRight: () => moveFocus('right'),
     onA: () => activateFocused(),
     onB: () => onBack(),
-    onLeftBumper: handleVolumeUp,
-    onLeftTrigger: handleVolumeDown,
+    onY: handleVolumeUp,
+    onX: handleVolumeDown,
   });
 
   // Clear focus when leaving this screen
