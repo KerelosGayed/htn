@@ -64,7 +64,7 @@ const repoRoot = path.resolve(__dirname, '..');
 const isWindows = process.platform === 'win32';
 
 function runCommand(cmd, args, options = {}) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     // For shell scripts, we need to ensure proper execution
     const execOptions = { 
       cwd: repoRoot, 
@@ -100,7 +100,15 @@ function runCommand(cmd, args, options = {}) {
       console.error(`❌ [${cmd}] Error errno:`, error.errno);
       console.error(`❌ [${cmd}] Error syscall:`, error.syscall);
       console.error(`❌ [${cmd}] Error path:`, error.path);
-      reject(error);
+      
+      // Resolve with error instead of rejecting
+      resolve({ 
+        ok: false, 
+        error: error.message,
+        code: error.code,
+        stdout: '',
+        stderr: error.message
+      });
     });
     
     child.on('close', (code, signal) => {
@@ -110,19 +118,21 @@ function runCommand(cmd, args, options = {}) {
       
       if (code === 0) {
         console.log(`✅ [${cmd}] Command succeeded`);
-        resolve({ code, stdout, stderr });
+        resolve({ ok: true, code, stdout, stderr });
       } else {
-        const error = new Error(stderr || `Process exited with code ${code}`);
-        error.code = code;
-        error.stdout = stdout;
-        error.stderr = stderr;
-        error.signal = signal;
-        
         console.error(`❌ [${cmd}] Command failed with exit code ${code}`);
         if (stderr) console.error(`❌ [${cmd}] stderr: ${stderr}`);
         if (stdout) console.error(`📤 [${cmd}] stdout: ${stdout}`);
         
-        reject(error);
+        // Resolve with error instead of rejecting
+        resolve({ 
+          ok: false, 
+          error: stderr || `Process exited with code ${code}`,
+          code,
+          stdout,
+          stderr,
+          signal
+        });
       }
     });
   });
@@ -431,11 +441,13 @@ ipcMain.handle('hermes:system:status', async () => {
   const workingPythonPath = await findPythonPath();
   console.log('🔧 Using Python path:', workingPythonPath);
   
-  // Check if script exists
+  // Check if script exists using Node.js fs (not ES modules)
+  const fs = require('fs');
   try {
-    const fs = await import('fs');
     if (!fs.existsSync(batteryScript)) {
       console.error('❌ Battery script not found:', batteryScript);
+      // List directory contents for debugging
+      console.log('📁 Directory contents of repoRoot:', fs.readdirSync(repoRoot));
       return { ok: false, error: `Script not found: ${batteryScript}` };
     }
     console.log('✅ Battery script exists');
@@ -455,7 +467,7 @@ ipcMain.handle('hermes:system:status', async () => {
       return { ok: true, stdout: res.stdout, stderr: res.stderr };
     } else {
       console.error('❌ System status command failed:', res);
-      return { ok: false, error: res.error || res.stderr || 'Command failed' };
+      return { ok: false, error: res.error || res.stderr || 'Command failed', stderr: res.stderr };
     }
   } catch (error) {
     console.error('❌ System status error:', error);
